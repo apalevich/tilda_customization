@@ -1,0 +1,173 @@
+<!--
+СКРИПТ ДЛЯ ИЗМЕНЕНИЯ КОЛИЧЕСТВА В КОРЗИНЕ ДЕСЯТЫМИ ВМЕСТО ЦЕЛЫХ ЧИСЕЛ
+РАЗРАБОТАН APALEVICH.RU
+-->
+
+<script type="text/javascript">
+
+$(document).ready(function() {
+	// ДЕЛАЕМ РЕЗЕРВНУЮ КОПИЮ ВНУТРЕННИХ ФУНКЦИЙ ТИЛЬДЫ С ПРИСТАВКОЙ _ORIGINAL
+	window.tcart__product__plus_original = tcart__product__plus;
+	window.tcart__product__minus_original = tcart__product__minus;
+	window.tcart__product__editquantity_original = tcart__product__editquantity;
+	window.tcart__updateTotalProductsinCartObj_original = tcart__updateTotalProductsinCartObj;
+
+	// ПЕРЕНАЗНАЧАЕМ ДЕЙСТВИЕ ПРИ НАЖАТИИ НА КНОПКУ "ПЛЮС"
+	window.tcart__product__plus = function(thiss){
+		var el=thiss.closest('.t706__product');
+		var i=el.attr('data-cart-product-i');
+		if(window.tcart.products[i]['quantity']>0 && typeof window.tcart.products[i]['inv']!='undefined' && window.tcart.products[i]['inv']>0){
+			if(window.tcart.products[i]['inv']==window.tcart.products[i]['quantity']){
+				alert(tcart__dict(13,'Sorry, limit reached, this is the maximum quantity of goods in stock'));
+				return;
+			}
+		}
+		
+		window.tcart.products[i]['quantity'] = parseFloat((window.tcart.products[i]['quantity']+0.1).toFixed(2));
+		window.tcart.products[i]['amount']=window.tcart.products[i]['price']*window.tcart.products[i]['quantity'];
+		window.tcart.products[i]['amount']=tcart__roundPrice(window.tcart.products[i]['amount']);
+		el.find('.t706__product-quantity').html(window.tcart.products[i]['quantity']);
+		if(window.tcart.products[i]['amount']>0){
+			el.find('.t706__product-amount').html( tcart__showPrice(window.tcart.products[i]['amount']) );
+		}else{
+			el.find('.t706__product-amount').html('');
+		}
+		
+		tcart__updateTotalProductsinCartObj();
+		$('.t706__carticon-counter').html(window.tcart['total']);
+		tcart__reDrawTotal();	
+		tcart__saveLocalObj();	
+	}
+
+	// ПЕРЕНАЗНАЧАЕМ ДЕЙСТВИЕ ПРИ НАЖАТИИ НА КНОПКУ "МИНУС"
+	window.tcart__product__minus = function(thiss){
+		var el=thiss.closest('.t706__product');
+		var i=el.attr('data-cart-product-i');
+		if(window.tcart.products[i]['quantity']>0){
+			window.tcart.products[i]['quantity'] = parseFloat((window.tcart.products[i]['quantity']-0.1).toFixed(2));
+		}
+		window.tcart.products[i]['amount']=window.tcart.products[i]['price']*window.tcart.products[i]['quantity'];
+		window.tcart.products[i]['amount']=tcart__roundPrice(window.tcart.products[i]['amount']);
+		el.find('.t706__product-quantity').html(window.tcart.products[i]['quantity']);
+		if(window.tcart.products[i]['amount']>0){
+			el.find('.t706__product-amount').html( tcart__showPrice(window.tcart.products[i]['amount']) );
+		}else{
+			/* tcart__product__del(thiss); */
+		}
+		if(window.tcart.products[i]['quantity']==0){
+			tcart__product__del(thiss);
+		}
+		
+		
+		tcart__updateTotalProductsinCartObj();
+		$('.t706__carticon-counter').html(window.tcart['total']);	
+		tcart__reDrawTotal();
+		tcart__saveLocalObj();
+	}
+
+	// ПЕРЕНАЗНАЧАЕМ ДЕЙСТВИЕ ПРИ РУЧНОМ РЕДАКТИРОВАНИИ ЗНАЧЕНИЯ КОЛИЧЕСТВА
+	window.tcart__product__editquantity = function(thiss){
+		if(thiss.find('.t706__product-quantity-inp').length){
+			return;
+		}
+		var el=thiss.closest('.t706__product');
+		var i=el.attr('data-cart-product-i');
+		var foo=thiss.text();
+		if(foo==0 || foo>0){
+			var qnt=parseFloat(parseFloat(foo).toFixed(2));
+		}else{
+			var qnt=1;
+		}
+		
+		var str='<input type="text" name="tilda-tmp-cart-qnt" class="t706__product-quantity-inp" value="'+qnt+'" style="width:30px;">';
+		thiss.html(str);
+		thiss.addClass('t706__product-quantity_editing');
+		
+		var inp=thiss.find('.t706__product-quantity-inp');
+		inp.focus(function(){
+			var that = this;
+			setTimeout(function(){ that.selectionStart = that.selectionEnd = 10000; }, 0);
+		});
+		inp.focus();
+
+		inp.focusout(function() {
+			var foo=inp.val();
+			foo=parseFloat(parseFloat(foo).toFixed(2));
+			if(foo>0){
+				var qnt=foo;
+			}else{
+				var qnt=1;
+			}
+									
+			tcart__product__updateQuantity(thiss,el,i,qnt);
+			
+			thiss.text( window.tcart.products[i]['quantity'] );
+			thiss.removeClass('t706__product-quantity_editing');
+		});
+			
+	}
+
+	// СЧИТАЕМ ОБЩЕЕ КОЛИЧЕСТВО ДЛЯ ОТОБРАЖЕНИЯ НА ИКОНКЕ И ПЕРЕДАЧЕ В CRM
+	window.tcart__updateTotalProductsinCartObj = function(){
+		var obj=window.tcart['products'];
+		if(obj.length>0){
+			
+			var total=0;
+			var prodamount=0;
+			$.each(obj, function( index, product ) {
+				total=total+product['quantity']*1;
+				total=Number(total.toFixed(1));
+				prodamount=prodamount*1+product['amount']*1;
+			});
+			prodamount = tcart__roundPrice(prodamount);
+			window.tcart['total']=total;
+			window.tcart['prodamount']=prodamount;
+					
+			var amount = prodamount;
+			
+			/* add pc */
+			if(typeof window.tcart.promocode == 'object' && typeof window.tcart.promocode.promocode!='undefined' && window.tcart.promocode.promocode!=''){
+				
+				var discountsum=0;
+				
+				if( typeof window.tcart.promocode.discountsum!='undefined' && window.tcart.promocode.discountsum>0){
+					discountsum = window.tcart.promocode.discountsum*1;
+				}else if( typeof window.tcart.promocode.discountpercent!='undefined' && window.tcart.promocode.discountpercent>0){;				
+					discountsum = tcart__roundPrice( amount * window.tcart.promocode.discountpercent*1/100 );
+				}else{
+					console.log('Cart Some error.');
+				}
+				
+				amount = amount - discountsum;
+				amount = tcart__roundPrice(amount);
+				if(amount<0){amount=0;}			
+					
+				window.tcart['prodamount_discountsum'] = discountsum;
+				window.tcart['prodamount_withdiscount'] = amount;			
+				
+			}
+			
+			/* add delivery */
+			if(typeof window.tcart.delivery=='object' && typeof window.tcart.delivery.price!='undefined' && window.tcart.delivery.price>0 && window.tcart.prodamount>0){
+				if(typeof window.tcart.delivery.freedl!='undefined' && window.tcart.delivery.freedl>0 && amount>=window.tcart.delivery.freedl){
+					
+				}else{
+					amount = amount + window.tcart.delivery.price*1;	
+				}
+			}		
+			
+			if(amount>0){
+				amount=tcart__roundPrice(amount);
+			}
+			window.tcart['amount'] = amount;
+			
+		}else{
+			
+			window.tcart['total']=0;
+			window.tcart['prodamount']=0;
+			window.tcart['amount']=0;
+			
+		}	
+	}
+})
+</script>

@@ -1,7 +1,7 @@
 # tilda_customization
 
-- [ENGLISH](http://google.com)
-- [РУССКИЙ](http://google.com)
+- [ENGLISH](#en)
+- [РУССКИЙ](#ру)
 
 ## EN
 ### Description

@@ -20,8 +20,8 @@ A script can contain blocks with different languages like these:
 You will find a lot of jQuery syntax but I do not import jQuery since Tilda is using jQuery 1.10.2 from the box.
 
 ### List of actual scripts
-- float_quantity.html — allows to use decimals when choose quantity in cart
-— parse_dinamyc_price_table *— parse names and prices depends on date from a block CL46 (table) and put it into pop-up for an order preparing*
+- float_quantity.html *// allows to use decimals when choose quantity in cart*
+- parse_dinamyc_price_table *// parse names and prices depends on date from a block CL46 (table) and put it into pop-up for an order preparing*
 
 ### Feedback
 You are welcome to leave a comments and issues in this repo. In case you want to discuss something more common or offer me a job, send me a message to [hello@apalevich.ru](mailto:hello@apalevich.ru). Other contacts you will find at [apalevich.ru](http://apalevich.ru)
@@ -43,8 +43,8 @@ You are welcome to leave a comments and issues in this repo. In case you want to
 Нередко используется jQuery, для которого нет отдельного импорта, так как Тильда уже содержит jQuery 1.10.2 на каждой странице.
 
 ### Список скриптов
-- float_quantity *— позволяет использовать десятичные для указания количества в корзине*
-— parse_dinamyc_price_table *— собирает название продуктов и график изменения цен на них из блока CL46 (таблицы) и вносит в попап для оформления заказа*
+- float_quantity *// позволяет использовать десятичные для указания количества в корзине*
+- parse_dinamyc_price_table *// собирает название продуктов и график изменения цен на них из блока CL46 (таблицы) и вносит в попап для оформления заказа*
 
 ### Обратная связь
 Вы можете оставить комментарии и правки прямо в коде на GitHub. Если ваше сообщение носит более общий характер или связан с другими задачами, свяжитесь со мной по почте [hello@apalevich.ru](mailto:hello@apalevich.ru). Другие способы связи указаны на [apalevich.ru](http://apalevich.ru)

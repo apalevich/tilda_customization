@@ -1,0 +1,243 @@
+<style>
+
+/* ДОПОЛНИТЕЛЬНАЯ СТИЛИЗАЦИЯ ПО ЖЕЛАНИЮ ЗАКАЗЧИКА */
+.t756 .t-product__option-title {
+	padding-right: 10px;
+}
+
+</style>
+
+<script>
+
+$(document).ready(function(){
+	// СКРЫВАЕМ АДМИНИСТРАТОРСКИЕ ЭЛЕМЕНТЫ ОТ ПОЛЬЗОВАТЕЛЯ: РАЗМЕР ЗАДАТКА, ТАБЛИЦУ ЦЕН И ДРУГИЕ
+	$('.t192').last().parent().css('display', 'none')
+	$('.t431').last().parent().css('display', 'none')
+	$('.t142').last().parent().css('display', 'none')
+
+	// СТИЛИЗУЕМ КНОПКУ В ПОПАПЕ ПО ОБРАЗЦУ ПЕРВОЙ КНОПКИ НА ОБЛОЖКЕ
+	var firstCoverButton = document.querySelector('div.t-cover a:first-child')
+	var popupButton = document.querySelector('div.t756 a')
+	popupButton.setAttribute('style', firstCoverButton.getAttribute('style'))
+
+	// СОЗДАЁМ ПЕРЕМЕННЫЕ ДЛЯ ЭЛЕМЕНТОВ DOM
+	var products = document.querySelectorAll('div.t776 > div > div.js-store-grid-cont.t-store__grid-cont.t-container.t-store__grid-cont_mobile-grid > div > a > div > div.js-store-prod-name.js-product-name.t-store__card__title.t-name.t-name_xs');
+	var tableStartDates = document.querySelectorAll('div.t431 > div > div > div.t431__wrapper-for-mobile > div > table > tbody > tr > td:nth-child(1)');
+	var tableDateChange = document.querySelectorAll('div.t431 > div > div > div.t431__wrapper-for-mobile > div > table > tbody > tr > td:nth-child(2)');
+	var tablePrices = document.querySelectorAll('div.t431 > div > div > div.t431__wrapper-for-mobile > div > table > tbody > tr > td:nth-child(3)');
+	var tableButtonText = document.querySelectorAll('div.t431 > div > div > div.t431__wrapper-for-mobile > div > table > tbody > tr > td:nth-child(4)');
+	var pageTitle = document.querySelector('head > title').innerHTML;
+
+	var LINKFOROPENINGPOPUP = '[href=#mycoolproduct]'
+
+	var doMagic = function(percentOfPay) {
+
+		// // СОЗДАЁМ ФУНКЦИЮ ДЛЯ ПОИСКА НУЖНОЙ СТРОКИ В ТАБЛИЦЕ ЦЕН
+		// var findTableRowBytableButtonText = function(text) {
+		// for (var i = 0; i < tableButtonText.length; i++) {
+		// 	if (tableButtonText[i].innerHTML == text) {
+		// 		return i;
+		// 	}
+		// }
+		// console.warn('Опция продукта не найдена в таблице');
+		// }
+
+		// СОЗДАЁМ МАССИВ УНИКАЛЬНЫХ ДАТ КУРСА ДЛЯ ВЫВОДА ПОПАПА С КНОПКАМИ
+		var courseTextArray = [];
+		tableButtonText.forEach(function(item, number) {
+			if (!courseTextArray.includes(item.innerHTML)) {
+				courseTextArray.push(item.innerHTML);
+			}
+		});
+
+
+		// // ОФОРМЛЯЕМ ПОПАП С ВЫБОРОМ ДАТ
+		setTimeout(function(){
+
+			//МЕНЯЕМ ЗАГОЛОВОК И ПОДЗАГОЛОВОК
+			$('div.t756 > div > div.t-popup__container.t-popup__container-static.t-width.t-width_8.js-product.t-popup__container-animated > div > div.t756__wrapper.t-align_center > div.t756__title-wrapper > div:first-child').text(pageTitle);
+			
+			if (percentOfPay < 100) {
+				$('div.t756 > div > div.t-popup__container.t-popup__container-static.t-width.t-width_8.js-product.t-popup__container-animated > div > div.t756__wrapper.t-align_center > div.t756__title-wrapper > div:nth-child(2)').text('Задаток ' + percentOfPay + '%');	
+			} else {
+				$('div.t756 > div > div.t-popup__container.t-popup__container-static.t-width.t-width_8.js-product.t-popup__container-animated > div > div.t756__wrapper.t-align_center > div.t756__title-wrapper > div:nth-child(2)').text(percentOfPay + '% оплата');	
+			}
+
+			// ДОБАВЛЯЕМ ДАТЫ КУРСОВ
+			$('.t756 select:even').addClass('datalist');
+			var datalist = $('.datalist');
+			var activeOptions = '';
+
+			for (var i = 0; i < courseTextArray.length; i++) {
+				activeOptions += '<option value="' + courseTextArray[i] + '" data-product-variant-price="">' + courseTextArray[i] + '</option>'
+			}
+			datalist.html(activeOptions);
+
+			// ОБНОВЛЯЕМ СТОИМОСТЬ КУРСА
+			var popupUpdatePrice = function() {
+				// ПОЛУЧАЕМ ВЫБРАННЫЙ ПОЛЬЗОВАТЕЛЕМ СЕЛЕКТОР
+				var chosenSelectorValue = datalist.val();
+
+				// ИЩЕМ ПЕРВЫЙ И ПОСЛЕДНИЙ ИНДЕКС ВЫБРАННОГО КУРСА
+				var tableButtonTextParsed = []
+				for (var i = 0; i < tableButtonText.length; i++) {
+					tableButtonTextParsed.push(tableButtonText[i].innerHTML)
+				}
+				var firstIndex = tableButtonTextParsed.indexOf(chosenSelectorValue);
+				var lastIndex = tableButtonTextParsed.lastIndexOf(chosenSelectorValue);
+
+				// ОПРЕДЕЛЯЕМ АКТУАЛЬНУЮ ЦЕНУ В ДИАПАЗОНЕ ВЫБРАННЫХ КУРСОВ
+				var today = new Date();
+				var actualRow;
+
+				for (var i = firstIndex; i <= lastIndex; i++) {
+					var currentDate = new Date(tableStartDates[i].innerHTML)
+					currentDate.setDate(currentDate.getDate() - tableDateChange[i].innerHTML)
+
+					if (today < currentDate) {
+						actualRow = i;
+					} else {
+						actualRow = lastIndex;
+					}
+				}
+
+				var calculation = parseInt(tablePrices[actualRow].innerHTML) / 100 * percentOfPay
+
+				$('div.t756 > div > div.t-popup__container.t-popup__container-static.t-width.t-width_8.js-product.t-popup__container-animated > div > div.t756__wrapper.t-align_center > div.t756__price-wrapper > div > div.t756__price-value.js-product-price').text(calculation)
+			}
+
+			popupUpdatePrice()
+			
+			$('.datalist').change(function() {
+				popupUpdatePrice()
+			})
+		}, 100);
+	};
+
+	// ПО КЛИКУ НА ССЫЛКУ #FULLPAY
+	$('[href=#fullpay]').on('click', function(){
+		$(LINKFOROPENINGPOPUP).click();
+		doMagic(100);
+	});
+
+	// ПО КЛИКУ НА ССЫЛКУ #PREPAY
+	$('[href=#prepay]').on('click', function(){
+		$(LINKFOROPENINGPOPUP).click();
+		var prepayAmount = document.querySelector('div.t192:last-child > div > div > div > div.t192__title.t-title.t-title_md').innerHTML;
+		doMagic(parseInt(prepayAmount));
+	});	
+
+
+
+});
+
+	// ДЕЛАЕМ СКИДКУ В КОРЗИНЕ (ПЕРЕОПРЕДЕЛЯЕМ ВНУТРЕННЮЮ ФУНКЦИЮ ТИЛЬДЫ)
+	window.tcart__reDrawTotal = function(){
+		//НАШ КОД НА ПРОВЕРКУ УСЛОВИЯ СКИДКИ И ПЕРЕСЧЁТ СУММЫ
+		var cartMessagePlace = $('#rec125666156 > div > div.t706__cartwin.t706__cartwin_showed > div.t706__cartwin-content > div.t706__cartwin-bottom > div');
+		var payModes = document.querySelectorAll('#rec125666156 > div > div.t706__cartwin.t706__cartwin_showed > div.t706__cartwin-content > div.t706__cartwin-products > div > div.t706__product-title.t-descr.t-descr_sm > div:nth-child(2)');
+		var prodamountChecked;
+
+		if (!$('.discount-message').length) {
+			cartMessagePlace.append('<div class="discount-message" style="color:#cf1c26;"></div>');
+		}
+
+		for (var i = 0; i < payModes.length; i++) {
+			if (payModes[i].innerHTML.includes('100%') && payModes.length > 1) {
+				var discountAccepted = 'Вы получили скидку 10%! Сумма ниже указана со скидкой';
+				$('.discount-message').text(discountAccepted);
+				window.tcart.prodamount = Math.round(tcart.prodamount * 0.9);
+				break;
+			} else {
+				var discountDenied = 'Выберите более одного курса, чтобы один из них был с полной оплатой и получите скидку 10%!';
+				$('.discount-message').text(discountDenied);
+				window.tcart.prodamount = window.tcart.prodamount;
+			}
+		}
+
+		// ОРИГИНАЛЬНЫЙ КОД ТИЛЬДЫ
+		$('.t706__cartwin-prodamount').html( tcart__showPrice(window.tcart.prodamount) );	
+		$('.t706__cartwin-totalamount').html( tcart__showPrice(window.tcart.amount) );
+
+		/* add details if has delivery or promocode */
+		var elinfo=$('.t706__cartwin-totalamount-info');
+		elinfo.html('');
+		
+		if(typeof window.tcart.promocode=='object' || typeof window.tcart.delivery=='object'){
+			elinfo.css('display','block');
+			elinfo.append( tcart__dict(2,'Subtotal') + ': ' + tcart__showPrice(window.tcart.prodamount) + '<br>');
+		}
+		
+		if(typeof window.tcart.promocode=='object'){		
+			elinfo.append( tcart__dict(9,'Promo code') + ': ' + window.tcart.promocode.promocode + ( typeof window.tcart.promocode.discountpercent!='undefined' ? ' ' + window.tcart.promocode.discountpercent + '% ' : '') + '<br>');
+			elinfo.append( tcart__dict(10,'Discount') + ': ' + tcart__showPrice(window.tcart.prodamount_discountsum) + '<br>' );
+			if(window.tcart.prodamount_withdiscount>0){
+				elinfo.append( tcart__dict(8,'Subtotal with discount') + ': ' + tcart__showPrice( window.tcart.prodamount_withdiscount ) + '<br>' );
+			}else{
+				elinfo.append( tcart__dict(8,'Subtotal with discount') + ': 0<br>' );
+			}
+		}
+
+		if(typeof window.tcart.delivery=='object' && typeof window.tcart.delivery.name!='undefined' && typeof window.tcart.delivery.price!='undefined' && window.tcart.delivery.price>0){
+			if(typeof window.tcart.delivery.freedl!='undefined' && window.tcart.delivery.freedl>0 && window.tcart.prodamount>=window.tcart.delivery.freedl){
+				elinfo.append( window.tcart.delivery.name + ': 0 (' + tcart__dict(14,'free') + ')<br>');
+			}else{
+				elinfo.append( window.tcart.delivery.name + ': ' + tcart__showPrice(window.tcart.delivery.price) + '<br>');
+			}
+		}
+		
+		if(window.tcart.prodamount==0){	
+			$('.t706__cartwin-prodamount-wrap').css('display','none');
+		}else{
+			$('.t706__cartwin-prodamount-wrap').css('display','block');
+		}
+		
+		/* min order */
+		if(typeof window.tcart_minorder!='undefined' && window.tcart_minorder>0){
+			if(window.tcart.prodamount >= window.tcart_minorder ){
+				$('.t706__cartwin-prodamount-minorder').css('display','none');
+				$('.t706').find('.t-submit').removeClass('t706__submit_disable');
+			}else{
+				$('.t706__cartwin-prodamount-minorder').css('display','block');
+				$('.t706').find('.t-submit').addClass('t706__submit_disable');
+			}
+		}
+
+		/* min quantity order */
+		if(typeof window.tcart_mincntorder!='undefined' && window.tcart_mincntorder>0){
+			if(window.tcart.total >= window.tcart_mincntorder ){
+				$('.t706__cartwin-prodamount-mincntorder').css('display','none');
+				$('.t706').find('.t-submit').removeClass('t706__submit_disable');
+			}else{
+				$('.t706__cartwin-prodamount-mincntorder').css('display','block');
+				$('.t706').find('.t-submit').addClass('t706__submit_disable');
+			}
+		}
+		
+		if(window.tcart.amount==0){	
+			$('.t706__cartwin-totalamount-wrap').css('display','none');
+		}else if(window.tcart.prodamount==window.tcart.amount){
+			if($('.t706__orderform').length && $('.t706__orderform').height() > 700){
+				$('.t706__cartwin-totalamount-wrap').css('display','block');
+			}else{		
+				$('.t706__cartwin-totalamount-wrap').css('display','none');
+			}
+		}else{
+			$('.t706__cartwin-totalamount-wrap').css('display','block');
+		}
+		
+		if(typeof window.tcart.promocode!='undefined'){
+			$('.t706__cartwin-totalamount-wrap').css('display','block');
+			if(window.tcart.amount==0){
+				$('.t706__cartwin-totalamount').html('0');		
+			}
+		}
+
+		if(typeof window.tcart.delivery!='undefined' && typeof window.tcart.delivery.price!='undefined' && window.tcart.delivery.price>0){
+			$('.t706__cartwin-totalamount-wrap').css('display','block');
+		}
+					
+		$('.t706__carticon-text').html('=&nbsp;'+ tcart__showPrice(window.tcart.prodamount) );
+	}
+
+</script>

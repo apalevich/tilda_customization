@@ -1,3 +1,9 @@
+<!--
+СКРИПТ ДЛЯ ПОДСТАНОВКИ ПОЛЬЗОВАТЕЛЮ НА ВЫБОР АКТУАЛЬНЫХ ДАТ И ЦЕН
+НА ОСНОВЕ ПАРСИНГА СКРЫТОЙ ТАБЛИЦЫ ЦЕНООБРАЗОВАНИЯ
+РАЗРАБОТАН APALEVICH.RU
+-->
+
 <style>
 
 /* ДОПОЛНИТЕЛЬНАЯ СТИЛИЗАЦИЯ ПО ЖЕЛАНИЮ ЗАКАЗЧИКА */
@@ -11,9 +17,31 @@
 
 $(document).ready(function(){
 	// СКРЫВАЕМ АДМИНИСТРАТОРСКИЕ ЭЛЕМЕНТЫ ОТ ПОЛЬЗОВАТЕЛЯ: РАЗМЕР ЗАДАТКА, ТАБЛИЦУ ЦЕН И ДРУГИЕ
-	$('.t192').last().parent().css('display', 'none')
-	$('.t431').last().parent().css('display', 'none')
-	$('.t142').last().parent().css('display', 'none')
+	if ($('.t431__th:contains(Название в попапе)').parents()[8] == undefined) {
+		console.warn('Таблица с ценами не найдена');
+	} else {
+		console.log('Таблица с ценами успешно определена')
+		var adminTableId = '#' + $('.t431__th:contains(Название в попапе)').parents()[8].getAttribute('id');
+		$(adminTableId).css('display', 'none');
+	}
+
+	if ($('.t192__text:contains(Размер задатка в процентах)').parents()[4] == undefined) {
+		console.warn('Размер задатка не найден');
+	} else {
+		console.log('Размер задатка успешно определен')
+		var adminPrepayId = '#' + $('.t192__text:contains(Размер задатка в процентах)').parents()[4].getAttribute('id');
+		$(adminPrepayId).css('display', 'none');
+	}
+
+	var LINKFOROPENINGPOPUP = '[href=#mycoolproduct]'
+	
+	if ($(LINKFOROPENINGPOPUP).parents()[4] == undefined) {
+		console.warn('Кнопка запуска попапа не найдена');
+	} else {
+		console.log('Кнопка запуска попапа успешно определена')
+		var adminButtonId = '#' + $(LINKFOROPENINGPOPUP).parents()[4].getAttribute('id');
+		$(adminButtonId).css('display', 'none');
+	}
 
 	// СТИЛИЗУЕМ КНОПКУ В ПОПАПЕ ПО ОБРАЗЦУ ПЕРВОЙ КНОПКИ НА ОБЛОЖКЕ
 	var firstCoverButton = document.querySelector('div.t-cover a:first-child')
@@ -21,28 +49,16 @@ $(document).ready(function(){
 	popupButton.setAttribute('style', firstCoverButton.getAttribute('style'))
 
 	// СОЗДАЁМ ПЕРЕМЕННЫЕ ДЛЯ ЭЛЕМЕНТОВ DOM
-	var products = document.querySelectorAll('div.t776 > div > div.js-store-grid-cont.t-store__grid-cont.t-container.t-store__grid-cont_mobile-grid > div > a > div > div.js-store-prod-name.js-product-name.t-store__card__title.t-name.t-name_xs');
-	var tableStartDates = document.querySelectorAll('div.t431 > div > div > div.t431__wrapper-for-mobile > div > table > tbody > tr > td:nth-child(1)');
-	var tableDateChange = document.querySelectorAll('div.t431 > div > div > div.t431__wrapper-for-mobile > div > table > tbody > tr > td:nth-child(2)');
-	var tablePrices = document.querySelectorAll('div.t431 > div > div > div.t431__wrapper-for-mobile > div > table > tbody > tr > td:nth-child(3)');
-	var tableButtonText = document.querySelectorAll('div.t431 > div > div > div.t431__wrapper-for-mobile > div > table > tbody > tr > td:nth-child(4)');
+	var tableStartDates = document.querySelectorAll(adminTableId + ' > div > div > div > div.t431__wrapper-for-mobile > div > table > tbody > tr > td:nth-child(1)');
+	var tableDateChange = document.querySelectorAll(adminTableId + ' > div > div > div > div.t431__wrapper-for-mobile > div > table > tbody > tr > td:nth-child(2)');
+	var tablePrices = document.querySelectorAll(adminTableId + ' > div > div > div > div.t431__wrapper-for-mobile > div > table > tbody > tr > td:nth-child(3)');
+	var tableButtonText = document.querySelectorAll(adminTableId + ' > div > div > div > div.t431__wrapper-for-mobile > div > table > tbody > tr > td:nth-child(4)');
 	var pageTitle = document.querySelector('head > title').innerHTML;
 
-	var LINKFOROPENINGPOPUP = '[href=#mycoolproduct]'
-
+	
 	var doMagic = function(percentOfPay) {
 
-		// // СОЗДАЁМ ФУНКЦИЮ ДЛЯ ПОИСКА НУЖНОЙ СТРОКИ В ТАБЛИЦЕ ЦЕН
-		// var findTableRowBytableButtonText = function(text) {
-		// for (var i = 0; i < tableButtonText.length; i++) {
-		// 	if (tableButtonText[i].innerHTML == text) {
-		// 		return i;
-		// 	}
-		// }
-		// console.warn('Опция продукта не найдена в таблице');
-		// }
-
-		// СОЗДАЁМ МАССИВ УНИКАЛЬНЫХ ДАТ КУРСА ДЛЯ ВЫВОДА ПОПАПА С КНОПКАМИ
+		// СОЗДАЁМ МАССИВ УНИКАЛЬНЫХ НАЗВАНИЙ КУРСА ДЛЯ ВЫВОДА ПОПАПА С КНОПКАМИ
 		var courseTextArray = [];
 		tableButtonText.forEach(function(item, number) {
 			if (!courseTextArray.includes(item.innerHTML)) {
@@ -51,7 +67,7 @@ $(document).ready(function(){
 		});
 
 
-		// // ОФОРМЛЯЕМ ПОПАП С ВЫБОРОМ ДАТ
+		// ОФОРМЛЯЕМ ПОПАП С ВЫБОРОМ ДАТ
 		setTimeout(function(){
 
 			//МЕНЯЕМ ЗАГОЛОВОК И ПОДЗАГОЛОВОК
@@ -95,7 +111,12 @@ $(document).ready(function(){
 					currentDate.setDate(currentDate.getDate() - tableDateChange[i].innerHTML)
 
 					if (today < currentDate) {
-						actualRow = i;
+						if (i > 0) {
+							actualRow = i - 1;
+						} else {
+							actualRow = 0
+						}
+						break;
 					} else {
 						actualRow = lastIndex;
 					}
@@ -127,8 +148,6 @@ $(document).ready(function(){
 		doMagic(parseInt(prepayAmount));
 	});	
 
-
-
 });
 
 	// ДЕЛАЕМ СКИДКУ В КОРЗИНЕ (ПЕРЕОПРЕДЕЛЯЕМ ВНУТРЕННЮЮ ФУНКЦИЮ ТИЛЬДЫ)
@@ -146,12 +165,12 @@ $(document).ready(function(){
 			if (payModes[i].innerHTML.includes('100%') && payModes.length > 1) {
 				var discountAccepted = 'Вы получили скидку 10%! Сумма ниже указана со скидкой';
 				$('.discount-message').text(discountAccepted);
-				window.tcart.prodamount = Math.round(tcart.prodamount * 0.9);
+				window.tcart.amount = Math.round(tcart.amount * 0.9);
 				break;
 			} else {
 				var discountDenied = 'Выберите более одного курса, чтобы один из них был с полной оплатой и получите скидку 10%!';
 				$('.discount-message').text(discountDenied);
-				window.tcart.prodamount = window.tcart.prodamount;
+				window.tcart.amount = window.tcart.amount;
 			}
 		}
 

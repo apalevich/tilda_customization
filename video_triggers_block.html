@@ -1,0 +1,88 @@
+<!--
+УНИВЕРСАЛЬНЫЙ СКРИПТ ДЛЯ ОТОБРАЖЕНИЯ СКРЫТЫХ БЛОКОВ ПО ТАЙМЕРУ ПРОСМАТРИВАЕМОГО ВИДЕО.
+
+ДЛЯ НАСТРОЙКИ ПОНАДОБЯТСЯ:
+1) ID ВИДЕО НА YOUTUBE — В ССЫЛКЕ НА ВИДЕО ЭТО СИМВОЛЫ ПОСЛЕ /
+2) ID СКРЫВАЕМЫХ БЛОКОВ — УКАЗАНЫ В НАСТРОЙКАХ БЛОКОВ
+3) НАЗВАНИЕ, ЦЕНА И ИЗОБРАЖЕНИЕ ТОВАРА ДЛЯ ДОБАВЛЕНИЯ В КОРЗИНУ (необязательно)
+
+РАЗРАБОТКА: APALEVICH.RU
+ -->
+
+
+<!-- НАСТРОЙКИ ВНЕШНЕГО ВИДА -->
+
+<style>
+/* В ЭТОЙ СТРОКЕ ЧЕРЕЗ ЗАПЯТУЮ УКАЖИТЕ ID СКРЫВАЕМЫХ БЛОКОВ */
+  #rec147644320
+  {
+      display: none;
+  }
+/* ТУТ НАСТРАИВАЕТСЯ РАЗМЕР ВИДЕОПЛЕЕРА */
+  #player {
+    width: 100%;
+    max-width: 1024px;
+    height: 40vw;
+    max-height: 628px;
+  }
+
+</style>
+
+<center>
+    <div id="player"></div>
+</center>
+
+<script>
+
+// НАСТРОЙКИ СКРИПТА
+var settings = {
+  youtubeId: 'XEfDYMngJeE', // id видео на youtube (можно взять из ссылки на него после символа / )
+  offerName: 'Название',
+  offerPrice: 999,
+  offerImageURL: 'https://webkit.org/demos/srcset/image-src.png',
+}
+var { youtubeId, offerName, offerPrice, offerImageURL } = settings;
+
+// ОТСЮДА НАЧИНАЕТСЯ МАГИЯ
+var tag = document.createElement('script');
+tag.src = "https://www.youtube.com/iframe_api";
+var firstScriptTag = document.getElementsByTagName('script')[0];
+firstScriptTag.parentNode.insertBefore(tag, firstScriptTag);
+
+var player;
+function onYouTubeIframeAPIReady() {
+  player = new YT.Player('player', {
+    videoId: youtubeId,
+    playerVars: { 'autoplay': 0, 'fs': 0 },
+    events: {
+      'onStateChange': onPlayerStateChange
+    }
+  });
+}
+
+function onPlayerReady(event) {
+  event.target.playVideo();
+}
+
+
+function onPlayerStateChange(event) {
+  if (event.data == YT.PlayerState.PLAYING) {
+    setInterval(() => {
+        var curTime = player.getCurrentTime();
+      // УКАЗЫВАЕМ УСЛОВИЯ:
+      // ЦИФРАМИ В СКОБКАХ ЗНАЧЕНИЕ В СЕКУНДАХ, КОГДА БЛОК ДОЛЖЕН БЫТЬ ПОКАЗАН (ПЕРВАЯ ЦИФРА — ОТ, ВТОРАЯ — ДО)
+      if (curTime > 6 && curTime < 12) {
+        // В КАВЫЧКАХ УКАЗЫВАЕМ ID БЛОКА, ПОСЛЕ ТОЧКИ ДЕЙСТВИЕ — slideDown() ПОКАЗЫВАЕТ БЛОК, slideUp() УБИРАЕТ БЛОК
+        $('#rec147644320').slideDown();
+      }
+      // СЛЕДУЮЩЕЕ УСЛОВИЕ
+      if (curTime > 12) {
+        $('#rec147644320').slideUp();
+      }
+      //ТУТ МОЖНО ДОБАВИТЬ ЕЩЁ УСЛОВИЙ, ЕСЛИ НУЖНО
+   
+    }, 1000)
+  }
+}
+
+</script>

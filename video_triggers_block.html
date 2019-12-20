@@ -9,11 +9,14 @@
 РАЗРАБОТКА: APALEVICH.RU
  -->
 
+<center>
+    <div id="player"></div>
+</center>
 
 <!-- НАСТРОЙКИ ВНЕШНЕГО ВИДА -->
-
 <style>
-/* В ЭТОЙ СТРОКЕ ЧЕРЕЗ ЗАПЯТУЮ УКАЖИТЕ ID СКРЫВАЕМЫХ БЛОКОВ */
+/* В ЭТОЙ СТРОКЕ УКАЖИТЕ ID СКРЫВАЕМЫХ БЛОКОВ
+ (ЕСЛИ НЕСКОЛЬКО - ЧЕРЕЗ ЗАПЯТУЮ) */
   #rec147644320
   {
       display: none;
@@ -25,25 +28,20 @@
     height: 40vw;
     max-height: 628px;
   }
-
 </style>
-
-<center>
-    <div id="player"></div>
-</center>
-
 <script>
 
-// НАСТРОЙКИ СКРИПТА
-var settings = {
+ // НАСТРОЙКИ СКРИПТА
+var SETTINGS = {
   youtubeId: 'XEfDYMngJeE', // id видео на youtube (можно взять из ссылки на него после символа / )
+  buttonId: '#rec147644320',
   offerName: 'Название',
   offerPrice: 999,
   offerImageURL: 'https://webkit.org/demos/srcset/image-src.png',
 }
-var { youtubeId, offerName, offerPrice, offerImageURL } = settings;
+var { youtubeId, offerName, offerPrice, offerImageURL } = SETTINGS;
 
-// ОТСЮДА НАЧИНАЕТСЯ МАГИЯ
+// СОЗДАЁМ БЛОК ВИДЕО НА СТРАНИЦЕ
 var tag = document.createElement('script');
 tag.src = "https://www.youtube.com/iframe_api";
 var firstScriptTag = document.getElementsByTagName('script')[0];
@@ -60,25 +58,26 @@ function onYouTubeIframeAPIReady() {
   });
 }
 
-function onPlayerReady(event) {
-  event.target.playVideo();
-}
-
-
+// ПРИСВАИВАЕМ ДЛЯ КНОПКИ ДОБАВЛЕНИЕ В КОРЗИНУ
+$(buttonId + ' a').attr('href', `#order:${offerName}=${offerPrice}:::image=${offerImageURL}`);
+ 
+// ПРОПИСЫВАЕМ АЛГОРИТМ ПОЯВЛЕНИЯ БЛОКОВ
 function onPlayerStateChange(event) {
   if (event.data == YT.PlayerState.PLAYING) {
     setInterval(() => {
         var curTime = player.getCurrentTime();
+     
       // УКАЗЫВАЕМ УСЛОВИЯ:
       // ЦИФРАМИ В СКОБКАХ ЗНАЧЕНИЕ В СЕКУНДАХ, КОГДА БЛОК ДОЛЖЕН БЫТЬ ПОКАЗАН (ПЕРВАЯ ЦИФРА — ОТ, ВТОРАЯ — ДО)
-      if (curTime > 6 && curTime < 12) {
+      if ( curTime > 6 && curTime < 12 ) {
         // В КАВЫЧКАХ УКАЗЫВАЕМ ID БЛОКА, ПОСЛЕ ТОЧКИ ДЕЙСТВИЕ — slideDown() ПОКАЗЫВАЕТ БЛОК, slideUp() УБИРАЕТ БЛОК
         $('#rec147644320').slideDown();
       }
       // СЛЕДУЮЩЕЕ УСЛОВИЕ
-      if (curTime > 12) {
+      if ( curTime > 12 ) {
         $('#rec147644320').slideUp();
       }
+     
       //ТУТ МОЖНО ДОБАВИТЬ ЕЩЁ УСЛОВИЙ, ЕСЛИ НУЖНО
    
     }, 1000)

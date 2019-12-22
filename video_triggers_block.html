@@ -39,8 +39,13 @@ var SETTINGS = {
   offerPrice: 999,
   offerImageURL: 'https://webkit.org/demos/srcset/image-src.png',
 }
-var { youtubeId, offerName, offerPrice, offerImageURL } = SETTINGS;
+var { youtubeId, buttonId, offerName, offerPrice, offerImageURL } = SETTINGS;
 
+// ПРИСВАИВАЕМ ДЛЯ КНОПКИ ДОБАВЛЕНИЕ В КОРЗИНУ
+$(document).ready(() => {
+ $(buttonId + ' a').attr('href', `#order:${offerName}=${offerPrice}:::image=${offerImageURL}`);
+});
+ 
 // СОЗДАЁМ БЛОК ВИДЕО НА СТРАНИЦЕ
 var tag = document.createElement('script');
 tag.src = "https://www.youtube.com/iframe_api";
@@ -58,9 +63,6 @@ function onYouTubeIframeAPIReady() {
   });
 }
 
-// ПРИСВАИВАЕМ ДЛЯ КНОПКИ ДОБАВЛЕНИЕ В КОРЗИНУ
-$(buttonId + ' a').attr('href', `#order:${offerName}=${offerPrice}:::image=${offerImageURL}`);
- 
 // ПРОПИСЫВАЕМ АЛГОРИТМ ПОЯВЛЕНИЯ БЛОКОВ
 function onPlayerStateChange(event) {
   if (event.data == YT.PlayerState.PLAYING) {

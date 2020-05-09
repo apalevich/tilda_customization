@@ -3,21 +3,17 @@
 
 ДЛЯ НАСТРОЙКИ ПОНАДОБЯТСЯ:
 1) ID ВИДЕО НА YOUTUBE — В ССЫЛКЕ НА ВИДЕО ЭТО СИМВОЛЫ ПОСЛЕ /
-2) ID СКРЫВАЕМЫХ БЛОКОВ — УКАЗАНЫ В НАСТРОЙКАХ БЛОКОВ
-3) НАЗВАНИЕ, ЦЕНА И ИЗОБРАЖЕНИЕ ТОВАРА ДЛЯ ДОБАВЛЕНИЯ В КОРЗИНУ (необязательно)
+2) ID СКРЫТЫХ БЛОКОВ — УКАЗАНЫ В НАСТРОЙКАХ БЛОКОВ
 
 РАЗРАБОТКА: APALEVICH.RU
  -->
 
-<center>
-    <div id="player"></div>
-</center>
 
 <!-- НАСТРОЙКИ ВНЕШНЕГО ВИДА -->
+
 <style>
-/* В ЭТОЙ СТРОКЕ УКАЖИТЕ ID СКРЫВАЕМЫХ БЛОКОВ
- (ЕСЛИ НЕСКОЛЬКО - ЧЕРЕЗ ЗАПЯТУЮ) */
-  #rec147644320
+/* В ЭТОЙ СТРОКЕ ЧЕРЕЗ ЗАПЯТУЮ УКАЖИТЕ ID СКРЫВАЕМЫХ БЛОКОВ */
+  #rec189750879, #rec147643654
   {
       display: none;
   }
@@ -25,61 +21,76 @@
   #player {
     width: 100%;
     max-width: 1024px;
-    height: 40vw;
+    height: 50vw;
     max-height: 628px;
   }
 </style>
+
+<center>
+    <div id="player"></div>
+</center>
+
 <script>
 
- // НАСТРОЙКИ СКРИПТА
+// НАСТРОЙКИ СКРИПТА
 var SETTINGS = {
-  youtubeId: 'XEfDYMngJeE', // id видео на youtube (можно взять из ссылки на него после символа / )
+  youtubeId: 'XEfDYMngJeE', // id видео на youtube (можно взять из ссылки на видео после символа '/' )
   buttonId: '#rec147644320', // id блока с кнопкой
-  offerName: 'Название', // название товара, который должен добавиться в корзину при нажатии на кнопку
-  offerPrice: 999, // цена товара, который должен добавиться в корзину при нажатии на кнопку
-  offerImageURL: 'https://webkit.org/demos/srcset/image-src.png', // изображение товара, который должен добавиться в корзину при нажатии на кнопку
+  hiddenBlockId1: '#rec189750879', // id первого скрытого блока
+  hiddenBlockId2: '#rec147643654' // id второго скрытого блока, 
 }
-var { youtubeId, buttonId, offerName, offerPrice, offerImageURL } = SETTINGS;
 
-// ПРИСВАИВАЕМ ДЛЯ КНОПКИ ДОБАВЛЕНИЕ В КОРЗИНУ
-$(document).ready(() => {
- $(buttonId + ' a').attr('href', `#order:${offerName}=${offerPrice}:::image=${offerImageURL}`);
-});
- 
-// СОЗДАЁМ БЛОК ВИДЕО НА СТРАНИЦЕ
+// СОХРАНЯЕМ НАСТРОЙКИ В ПЕРЕМЕННЫЕ 
+var { youtubeId, buttonId, hiddenBlockId1, hiddenBlockId2 } = SETTINGS;
+
+
+// ЗАГРУЖАЕМ СКРИПТ YOUTUBE IFRAME API ДЛЯ СОЗДАНИЯ ВИДЕОПЛЕЕРА
 var tag = document.createElement('script');
 tag.src = "https://www.youtube.com/iframe_api";
 var firstScriptTag = document.getElementsByTagName('script')[0];
 firstScriptTag.parentNode.insertBefore(tag, firstScriptTag);
 
+// СОЗДАЁМ ВИДЕОПЛЕЕР НА СТРАНИЦЕ
 var player;
 function onYouTubeIframeAPIReady() {
   player = new YT.Player('player', {
     videoId: youtubeId,
-    playerVars: { 'autoplay': 0, 'fs': 0 },
+    playerVars: {
+      'autoplay': 1,
+      'fs': 0
+    },
+    // ОПРЕДЕЛЯЕМ СОБЫТИЯ В ПЛЕЕРЕ, ПО КОТОРЫМ ДОЛЖНО ЧТО-ТО ПРОИСХОДИТЬ
     events: {
+      'onReady': onPlayerReady,
       'onStateChange': onPlayerStateChange
     }
   });
 }
 
-// ПРОПИСЫВАЕМ АЛГОРИТМ ПОЯВЛЕНИЯ БЛОКОВ
+// ТУТ ОПИСЫВАЕМ ДЕЙСТВИЕ ПО ЗАГРУЗКЕ ПЛЕЕРА
+function onPlayerReady(event) {
+  console.log('YouTube Player is ready');
+}
+// ТУТ ОПИСЫВАЕМ ДЕЙСТВИЕ ПО ИЗМЕНЕНИЮ СОСТОЯНИЯ ПЛЕЕРА — ОТОБРАЖЕНИЕ СКРЫТЫХ БЛОКОВ
+var curTime;
 function onPlayerStateChange(event) {
   if (event.data == YT.PlayerState.PLAYING) {
+    // ПРОВЕРЯЕМ ТАЙМИНГ ВИДЕО РАЗ В СЕКУНДУ
     setInterval(() => {
-        var curTime = player.getCurrentTime();
-     
+      // ОБНОВЛЯЕМ ЗНАЧЕНИЕ ТАЙМИНГА ВИДЕО
+      curTime = player.getCurrentTime();
+
       // УКАЗЫВАЕМ УСЛОВИЯ:
       // ЦИФРАМИ В СКОБКАХ ЗНАЧЕНИЕ В СЕКУНДАХ, КОГДА БЛОК ДОЛЖЕН БЫТЬ ПОКАЗАН (ПЕРВАЯ ЦИФРА — ОТ, ВТОРАЯ — ДО)
-      if ( curTime > 6 && curTime < 12 ) {
-        // В КАВЫЧКАХ УКАЗЫВАЕМ ID БЛОКА, ПОСЛЕ ТОЧКИ ДЕЙСТВИЕ — slideDown() ПОКАЗЫВАЕТ БЛОК, slideUp() УБИРАЕТ БЛОК
-        $('#rec147644320').slideDown();
+      // В КАВЫЧКАХ УКАЗЫВАЕМ ID БЛОКА, ПОСЛЕ ТОЧКИ ДЕЙСТВИЕ — slideDown() ПОКАЗЫВАЕТ БЛОК, slideUp() УБИРАЕТ БЛОК
+      if (curTime > 6 && curTime < 12) {
+        $(hiddenBlockId1).slideDown();
       }
       // СЛЕДУЮЩЕЕ УСЛОВИЕ
-      if ( curTime > 12 ) {
-        $('#rec147644320').slideUp();
+      if (curTime > 12) {
+        $(hiddenBlockId1).slideUp();
+        $(hiddenBlockId2).slideDown();
       }
-     
       //ТУТ МОЖНО ДОБАВИТЬ ЕЩЁ УСЛОВИЙ, ЕСЛИ НУЖНО
    
     }, 1000)

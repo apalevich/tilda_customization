@@ -6,7 +6,7 @@
 ## ENGLISH
 ### Description
 
-Easy scripts to customise websites made on [Tilda.cc](https://tilda.cc/) — the one of most famous and effective web-design frameworks in Russia's market.
+Set of scripts for customization websites made with Tilda.cc [Tilda.cc](https://tilda.cc/) — popular web-site builder.
 
 Scripts added as *.html files so you have to copy code and put it into the block T123. That's easy!
 
